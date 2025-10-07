@@ -15,18 +15,18 @@ endif()
 
 set(CMAKE_CXX_STANDARD 11) #required for fmt library
 
-# Apply -m32 flags for x86 architecture
-if(TARGET_ARCH STREQUAL "x86")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
-	add_link_options(-m32)
-endif()
-
 if (MSVC)
 	add_link_options(/INCREMENTAL:NO /NODEFAULTLIB:MSVCRT)
 	# link runtime statically
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 elseif(UNIX)
+	# Apply -m32 flags for x86 architecture
+	if(TARGET_ARCH STREQUAL "x86")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+		add_link_options(-m32)
+	endif()
+
 	# hide non-exported symbols
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -fPIC")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -fPIC")
