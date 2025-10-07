@@ -1,8 +1,6 @@
 #include "Logger.hpp"
-#include "AmxDebugManager.hpp"
 #include "LogManager.hpp"
 #include "LogConfig.hpp"
-#include "amx/amx2.h"
 #include "utils.hpp"
 
 #include <fmt/format.h>
@@ -38,18 +36,17 @@ Logger::~Logger()
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
-bool Logger::Log(LogLevel level, std::string msg,
-	std::vector<samplog::AmxFuncCallInfo> const &call_info)
+bool Logger::Log(LogLevel level, std::string msg)
 {
 	if (!IsLogLevel(level))
 		return false;
 
 	auto current_time = Clock::now();
-	LogManager::Get()->Queue([this, level, current_time, msg, call_info]()
+	LogManager::Get()->Queue([this, level, current_time, msg]()
 	{
 		std::string const
 			time_str = FormatTimestamp(current_time),
-			log_msg = FormatLogMessage(msg, call_info);
+			log_msg = FormatLogMessage(msg);
 
 		WriteLogString(time_str, level, log_msg);
 		LogManager::Get()->WriteLevelLogString(time_str, level, GetModuleName(), msg);
@@ -65,81 +62,6 @@ bool Logger::Log(LogLevel level, std::string msg,
 	return true;
 }
 
-bool Logger::Log(LogLevel level, std::string msg)
-{
-	static const std::vector<samplog::AmxFuncCallInfo> empty_call_info;
-	return Log(level, std::move(msg), empty_call_info);
-}
-
-bool Logger::LogNativeCall(AMX * const amx, cell * const params,
-	std::string name, std::string params_format)
-{
-	if (amx == nullptr)
-		return false;
-
-	if (params == nullptr)
-		return false;
-
-	if (name.empty())
-		return false;
-
-	if (!IsLogLevel(LogLevel::DEBUG))
-		return false;
-
-
-	fmt::memory_buffer fmt_msg;
-
-	fmt::format_to(fmt_msg, "{:s}(", name);
-
-	for (size_t i = 0; i != params_format.length(); ++i)
-	{
-		if (i != 0)
-			fmt::format_to(fmt_msg, ", ");
-
-		cell current_param = params[i + 1];
-		switch (params_format[i])
-		{
-		case 'd': //decimal
-		case 'i': //integer
-			fmt::format_to(fmt_msg, "{:d}", static_cast<int>(current_param));
-			break;
-		case 'f': //float
-			fmt::format_to(fmt_msg, "{:f}", amx_ctof(current_param));
-			break;
-		case 'h': //hexadecimal
-		case 'x': //
-			fmt::format_to(fmt_msg, "{:x}", current_param);
-			break;
-		case 'b': //binary
-			fmt::format_to(fmt_msg, "{:b}", current_param);
-			break;
-		case 's': //string
-			fmt::format_to(fmt_msg, "\"{:s}\"", amx_GetCppString(amx, current_param));
-			break;
-		case '*': //censored output
-			fmt::format_to(fmt_msg, "\"*****\"");
-			break;
-		case 'r': //reference
-		{
-			cell *addr_dest = nullptr;
-			amx_GetAddr(amx, current_param, &addr_dest);
-			fmt::format_to(fmt_msg, "{:#08x}", reinterpret_cast<unsigned int>(addr_dest));
-		}	break;
-		case 'p': //pointer-value
-			fmt::format_to(fmt_msg, "{:#08x}", current_param);
-			break;
-		default:
-			return false; //unrecognized format specifier
-		}
-	}
-	fmt::format_to(fmt_msg, ")");
-
-	std::vector<samplog::AmxFuncCallInfo> call_info;
-	AmxDebugManager::Get()->GetFunctionCallTrace(amx, call_info);
-
-	return Log(LogLevel::DEBUG, fmt::to_string(fmt_msg), call_info);
-}
-
 void Logger::OnConfigUpdate(Logger::Config const &config)
 {
 	_config = config;
@@ -153,26 +75,11 @@ std::string Logger::FormatTimestamp(Clock::time_point time)
 	return fmt::format("{:" + time_format + "}", fmt::localtime(now_c));
 }
 
-std::string Logger::FormatLogMessage(std::string message,
-	std::vector<samplog::AmxFuncCallInfo> call_info)
+std::string Logger::FormatLogMessage(std::string message)
 {
 	fmt::memory_buffer log_string_buf;
 
 	fmt::format_to(log_string_buf, "{:s}", message);
-
-	if (!call_info.empty())
-	{
-		fmt::format_to(log_string_buf, " (");
-		bool first = true;
-		for (auto const &ci : call_info)
-		{
-			if (!first)
-				fmt::format_to(log_string_buf, " -> ");
-			fmt::format_to(log_string_buf, "{:s}:{:d}", ci.file, ci.line);
-			first = false;
-		}
-		fmt::format_to(log_string_buf, ")");
-	}
 
 	return fmt::to_string(log_string_buf);
 }

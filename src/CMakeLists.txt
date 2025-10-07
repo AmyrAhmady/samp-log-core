@@ -1,9 +1,5 @@
-include(AMXConfig)
-
 option(LOGCORE_INSTALL_DEV 
 	"Generate install target specifically for development." ON)
-
-add_subdirectory(amx)
 
 if(WIN32)
 	set(CRASHHANDLER_CPP crashhandler_windows.cpp)
@@ -17,8 +13,6 @@ set(LOGCORE_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/samplog)
 
 add_library(log-core SHARED
 	Api.cpp
-	AmxDebugManager.cpp
-	AmxDebugManager.hpp
 	SampConfigReader.cpp
 	SampConfigReader.hpp
 	Singleton.hpp
@@ -109,7 +103,6 @@ elseif(UNIX)
 endif()
 
 target_link_libraries(log-core PRIVATE
-	amx
 	fmt
 	yaml-cpp
 )

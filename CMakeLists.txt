@@ -33,6 +33,7 @@ set(LOGCORE_LIBS_DIR "${PROJECT_SOURCE_DIR}/libs")
 add_subdirectory(libs/fmt)
 mark_as_advanced(FMT_TEST FMT_INSTALL FMT_PEDANTIC FMT_DOC FMT_USE_CPP11 FMT_WERROR)
 
-find_package(yaml-cpp REQUIRED CONFIG)
+add_definitions(-DYAML_CPP_BUILD_CONTRIB=OFF -DYAML_CPP_BUILD_TOOLS=OFF -DYAML_CPP_BUILD_TESTS=OFF -DBUILD_GMOCK=OFF -DYAML_MSVC_SHARED_RT=OFF)
+add_subdirectory(libs/yaml-cpp)
 
 add_subdirectory(src)

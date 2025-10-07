@@ -34,11 +34,7 @@ public: // interface implementation
 		return (_config.Level & log_level) == log_level;
 	}
 
-	bool Log(LogLevel level, std::string msg,
-		std::vector<samplog::AmxFuncCallInfo> const &call_info) override;
 	bool Log(LogLevel level, std::string msg) override;
-	bool LogNativeCall(AMX * const amx, cell * const params,
-		std::string name, std::string params_format) override;
 
 	void Destroy() override
 	{
@@ -55,8 +51,7 @@ private:
 	void OnConfigUpdate(Logger::Config const &config);
 
 	std::string FormatTimestamp(Clock::time_point time);
-	std::string FormatLogMessage(std::string message,
-		std::vector<samplog::AmxFuncCallInfo> call_info);
+	std::string FormatLogMessage(std::string message);
 
 	void WriteLogString(std::string const &time, LogLevel level,
 		std::string const &message);

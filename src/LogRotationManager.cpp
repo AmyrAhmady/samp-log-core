@@ -147,7 +147,7 @@ void LogRotationManager::CheckDateRotation(std::string const &file_path,
 		std::sort(logfile_dates.begin(), logfile_dates.end());
 	}
 
-	int count = logfile_dates.size();
+	int count = static_cast<int>(logfile_dates.size());
 	for (auto const &d : logfile_dates)
 	{
 		if (count-- < backup_count)
@@ -232,7 +232,7 @@ void LogRotationManager::CheckSizeRotation(std::string const &file_path,
 		return fmt::format("{:s}.{:d}", file_path, count);
 	};
 
-	int count = moved_nums.size();
+	int count = static_cast<int>(moved_nums.size());
 	for (auto const n : moved_nums)
 	{
 		auto const
