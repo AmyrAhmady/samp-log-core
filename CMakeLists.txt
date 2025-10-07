@@ -16,7 +16,7 @@ endif()
 set(CMAKE_CXX_STANDARD 11) #required for fmt library
 
 if (MSVC)
-	add_link_options(/INCREMENTAL:NO /NODEFAULTLIB:MSVCRT)
+	add_link_options(/INCREMENTAL:NO)
 	# link runtime statically
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 elseif(UNIX)
