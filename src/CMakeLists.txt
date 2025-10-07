@@ -84,8 +84,6 @@ endif()
 if (MSVC)
 	# increase warning levels
 	target_compile_options(log-core PRIVATE
-		/W4
-		/WX
 		/permissive-
 	)
 
@@ -96,8 +94,6 @@ if (MSVC)
 elseif(UNIX)
 	# increase warning levels
 	target_compile_options(log-core PRIVATE
-		-Wall
-		-Wextra
 		-pedantic
 	)
 endif()
