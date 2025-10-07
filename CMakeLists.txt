@@ -8,7 +8,19 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/libs/cmake")
 
+# Set target architecture (default: x86)
+if(NOT DEFINED TARGET_ARCH)
+	set(TARGET_ARCH "x86")
+endif()
+
 set(CMAKE_CXX_STANDARD 11) #required for fmt library
+
+# Apply -m32 flags for x86 architecture
+if(TARGET_ARCH STREQUAL "x86")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+	add_link_options(-m32)
+endif()
 
 if (MSVC)
 	add_link_options(/INCREMENTAL:NO /NODEFAULTLIB:MSVCRT)
@@ -16,8 +28,8 @@ if (MSVC)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 elseif(UNIX)
 	# hide non-exported symbols
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -fPIC")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -fPIC")
 	set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
 
 	# link runtime statically
